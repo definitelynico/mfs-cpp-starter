@@ -4,7 +4,7 @@ A simple CLI tool that sets up a modern C++ project with CMake, similar to how `
 
 ## Why
 
-I get confused when opening an IDE - simple as. I just want to be able to create a C++ project quickly and get going, but I'm also terrible at remembering all the commands, arguments and flags to create things like .clang-format, compile-commands.json and others in order to have a pleasant experience in [your favorite terminal text editor].
+I get confused when I open an IDE, simple as. I just want to be able to create a C++ project quickly and get going, but I'm also terrible at remembering all the commands, arguments and flags to create things like .clang-format, compile-commands.json and others in order to have a pleasant experience in [your favorite terminal text editor].
 
 ## Features
 
@@ -55,6 +55,40 @@ mfs-cpp-starter path/to/new-project
 
 # Create new project with custom name
 mfs-cpp-starter path/to/directory custom-name
+```
+
+### Example Setup in PowerShell
+
+To use the tool from anywhere, add this to your PowerShell profile (typically at `$PROFILE` or `~\Documents\PowerShell\Microsoft.PowerShell_profile.ps1`):
+
+```powershell
+function New-CppProject {
+    param(
+        [Parameter(Position=0)]
+        [string]$Path,
+        [Parameter(Position=1)]
+        [string]$ProjectName
+    )
+    
+    # Replace with your actual path to the executable
+    $toolPath = "X:/path/to/mfs-cpp-starter.exe"
+    
+    if ($Path) {
+        & $toolPath $Path $ProjectName
+    } else {
+        & $toolPath init $ProjectName
+    }
+}
+Set-Alias cppnew New-CppProject
+```
+
+Then you can use it like this:
+```powershell
+# Initialize in current directory
+cppnew . MyProject
+
+# Create new project in new directory
+cppnew path/to/project ProjectName
 ```
 
 ## Project Structure
