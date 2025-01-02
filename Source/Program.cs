@@ -8,28 +8,30 @@ internal class Program
     {
         if (args.Length == 0)
         {
-            Console.WriteLine("Usage: mfs-cpp-starter <project-name>");
+            Console.WriteLine("Usage: mfs-cpp-starter <project-path> [project-name]");
             return;
         }
 
-        string projectName = args[0];
+        string projectPath = args[0];
+        string projectName = args.Length > 1 ? args[1] : Path.GetFileName(projectPath);
+
         if (!IsValidProjectName(projectName))
         {
             Console.WriteLine("Error: Project name must be alphanumeric with hyphens or underscores only");
             return;
         }
 
-        string projectPath = Path.Combine(Directory.GetCurrentDirectory(), projectName);
-        if (Directory.Exists(projectPath))
+        string fullPath = Path.Combine(Directory.GetCurrentDirectory(), projectPath);
+        if (Directory.Exists(fullPath))
         {
-            Console.WriteLine($"Error: Directory '{projectPath}' already exists");
+            Console.WriteLine($"Error: Directory '{fullPath}' already exists");
             return;
         }
 
         try
         {
-            Directory.CreateDirectory(projectPath);
-            var generator = new FileGenerator(projectPath);
+            Directory.CreateDirectory(fullPath);
+            var generator = new FileGenerator(fullPath, projectName);
             generator.GenerateProject();
             Console.WriteLine($"Successfully created C++ project '{projectName}'");
             Console.WriteLine("\nTo build your project:");
@@ -40,15 +42,18 @@ internal class Program
         catch (Exception ex)
         {
             Console.WriteLine($"Error creating project: {ex.Message}");
-            if (Directory.Exists(projectPath))
+            if (Directory.Exists(fullPath))
             {
-                Directory.Delete(projectPath, true);
+                Directory.Delete(fullPath, true);
             }
         }
     }
 
     private static bool IsValidProjectName(string name)
     {
-        return Regex.IsMatch(name, "^[a-zA-Z0-9_-]+$");
+        // Split path into segments and check the last segment (actual project name)
+        string[] segments = name.Split('/', '\\');
+        string projectName = segments[^1];
+        return Regex.IsMatch(projectName, "^[a-zA-Z0-9_-]+$");
     }
 }

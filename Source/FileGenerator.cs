@@ -1,14 +1,17 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 public class FileGenerator
 {
     private readonly string _projectPath;
+    private readonly string _projectName;
     private readonly string _cmakeVersion;
     private readonly string _preferredGenerator;
 
-    public FileGenerator(string projectPath)
+    public FileGenerator(string projectPath, string projectName)
     {
         _projectPath = projectPath;
+        _projectName = projectName;
         _cmakeVersion = GetCMakeVersion();
         _preferredGenerator = DetectPreferredGenerator();
     }
@@ -27,8 +30,10 @@ public class FileGenerator
         string output = process?.StandardOutput.ReadLine() ?? "";
         process?.WaitForExit();
 
-        // Extract version from "cmake version X.Y.Z"
-        return output.Split(' ').Length >= 3 ? output.Split(' ')[2] : "3.20.0";
+        // Extract version from "cmake version X.Y.Z" and trim to X.Y
+        var version = output.Split(' ').Length >= 3 ? output.Split(' ')[2] : "3.20.0";
+        var match = Regex.Match(version, @"(\d+\.\d+)");
+        return match.Success ? match.Groups[1].Value : "3.20";
     }
 
     private string DetectPreferredGenerator()
@@ -87,14 +92,14 @@ int main()
     private void GenerateCMakeLists()
     {
         string content = $@"cmake_minimum_required(VERSION {_cmakeVersion})
-project(${{PROJECT_NAME}} LANGUAGES CXX)
+project({_projectName} LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(${{PROJECT_NAME}} src/main.cpp)
-target_include_directories(${{PROJECT_NAME}} PRIVATE include)
-target_link_directories(${{PROJECT_NAME}} PRIVATE lib)";
+add_executable({_projectName} src/main.cpp)
+target_include_directories({_projectName} PRIVATE include)
+target_link_directories({_projectName} PRIVATE lib)";
 
         File.WriteAllText(Path.Combine(_projectPath, "CMakeLists.txt"), content);
     }
