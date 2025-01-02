@@ -8,12 +8,26 @@ internal class Program
     {
         if (args.Length == 0)
         {
-            Console.WriteLine("Usage: mfs-cpp-starter <project-path> [project-name]");
+            Console.WriteLine("Usage:");
+            Console.WriteLine("  mfs-cpp-starter init [project-name]     # Initialize in current directory");
+            Console.WriteLine("  mfs-cpp-starter <project-path> [name]   # Create in new directory");
             return;
         }
 
-        string projectPath = args[0];
-        string projectName = args.Length > 1 ? args[1] : Path.GetFileName(projectPath);
+        string command = args[0];
+        string projectPath;
+        string projectName;
+
+        if (command == "init")
+        {
+            projectPath = Directory.GetCurrentDirectory();
+            projectName = args.Length > 1 ? args[1] : new DirectoryInfo(projectPath).Name;
+        }
+        else
+        {
+            projectPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), command));
+            projectName = args.Length > 1 ? args[1] : Path.GetFileName(projectPath);
+        }
 
         if (!IsValidProjectName(projectName))
         {
@@ -21,17 +35,40 @@ internal class Program
             return;
         }
 
-        string fullPath = Path.Combine(Directory.GetCurrentDirectory(), projectPath);
-        if (Directory.Exists(fullPath))
-        {
-            Console.WriteLine($"Error: Directory '{fullPath}' already exists");
-            return;
-        }
-
         try
         {
-            Directory.CreateDirectory(fullPath);
-            var generator = new FileGenerator(fullPath, projectName);
+            bool isInit = command == "init";
+            if (Directory.Exists(projectPath))
+            {
+                // For init command, check if directory only contains our executable
+                if (isInit)
+                {
+                    var currentExe = Path.GetFileName(Environment.ProcessPath ?? "");
+                    var files = Directory.GetFiles(projectPath);
+                    var dirs = Directory.GetDirectories(projectPath);
+                    bool onlyHasExe = files.Length <= 1 &&
+                                    dirs.Length == 0 &&
+                                    (files.Length == 0 ||
+                                     Path.GetFileName(files[0]).Equals(currentExe, StringComparison.OrdinalIgnoreCase));
+
+                    if (!onlyHasExe)
+                    {
+                        Console.WriteLine("Error: Current directory contains other files");
+                        return;
+                    }
+                }
+                else if (Directory.EnumerateFileSystemEntries(projectPath).Any())
+                {
+                    Console.WriteLine($"Error: Directory '{projectPath}' exists and is not empty");
+                    return;
+                }
+            }
+            else if (!isInit)
+            {
+                Directory.CreateDirectory(projectPath);
+            }
+
+            var generator = new FileGenerator(projectPath, projectName);
             generator.GenerateProject();
             Console.WriteLine($"Successfully created C++ project '{projectName}'");
             Console.WriteLine("\nTo build your project:");
@@ -42,9 +79,9 @@ internal class Program
         catch (Exception ex)
         {
             Console.WriteLine($"Error creating project: {ex.Message}");
-            if (Directory.Exists(fullPath))
+            if (Directory.Exists(projectPath))
             {
-                Directory.Delete(fullPath, true);
+                Directory.Delete(projectPath, true);
             }
         }
     }

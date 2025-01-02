@@ -2,6 +2,10 @@
 
 A simple CLI tool that sets up a modern C++ project with CMake, similar to how `cargo new` works for Rust projects.
 
+## Why
+
+I get confused when opening an IDE - simple as. I just want to be able to create a C++ project quickly and get going, but I'm also terrible at remembering all the commands, arguments and flags to create things like .clang-format, compile-commands.json and others in order to have a pleasant experience in [your favorite terminal text editor].
+
 ## Features
 
 - Creates a basic C++ project structure with src/, include/, and lib/ directories
@@ -17,38 +21,40 @@ A simple CLI tool that sets up a modern C++ project with CMake, similar to how `
 ```bash
 git clone https://github.com/definitelynico/mfs-cpp-starter.git
 cd mfs-cpp-starter
-dotnet build
-```
-
-## Publishing Native Executables
-
-The tool can be compiled to native code for better performance and standalone distribution:
-
-```bash
-# For Windows
 dotnet publish -c Release -r win-x64
-
-# For Linux
-dotnet publish -c Release -r linux-x64
-
-# For macOS
-dotnet publish -c Release -r osx-x64
 ```
 
-The compiled executables will be in `bin/Release/net9.0/[runtime]/publish/` and:
-- Have faster startup time
-- Run without .NET runtime dependency
-- Are optimized for size and speed
-- Are specific to the target platform
+The compiled executable will be in `bin/Release/net9.0/win-x64/publish/`.
 
 ## Usage
 
-```bash
-# Create a new project using directory name as project name
-dotnet run test/my-project
+There are two ways to create a new project:
 
-# Create a new project with custom project name
-dotnet run test/my-project CustomProjectName
+### 1. Initialize in Current Directory
+
+```bash
+mfs-cpp-starter init [project-name]
+```
+If project name is not provided, the current directory name will be used.
+
+### 2. Create in New Directory
+
+```bash
+mfs-cpp-starter <project-path> [project-name]
+```
+If project name is not provided, the directory name will be used.
+
+### Examples
+
+```bash
+# Initialize in current directory
+mfs-cpp-starter init my-project
+
+# Create new project in a new directory
+mfs-cpp-starter path/to/new-project
+
+# Create new project with custom name
+mfs-cpp-starter path/to/directory custom-name
 ```
 
 ## Project Structure
@@ -71,11 +77,16 @@ my-project/
 After creating a project:
 
 ```bash
-cd my-project
-cmake --preset debug    # Configure debug build
+# If using init in current directory:
+cmake --preset debug
 cmake --build build/debug
 
-# Or for release build
+# If created in new directory:
+cd <project-directory>
+cmake --preset debug
+cmake --build build/debug
+
+# For release builds:
 cmake --preset release
 cmake --build build/release
 ```

@@ -1,26 +1,50 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!-- Basic Configuration -->
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
-    <RootNamespace>mfs_cpp_starter</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     
-    <!-- AOT Configuration -->
-    <PublishAot>true</PublishAot>
-    <StripSymbols>true</StripSymbols>
-    <OptimizationPreference>Speed</OptimizationPreference>
-    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Version Information -->
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
     
-    <!-- Trimming -->
-    <TrimMode>full</TrimMode>
+    <!-- Assembly Information -->
+    <Company>Your Company</Company>
+    <Authors>Your Name</Authors>
+    <Product>Modern C++ Project Generator</Product>
+    <Description>A CLI tool for generating modern C++ projects with CMake support</Description>
+    <Copyright>Copyright © $([System.DateTime]::Now.Year)</Copyright>
+    
+    <!-- Output Configuration -->
+    <OutputPath>bin\$(Configuration)\$(RuntimeIdentifier)</OutputPath>
+    <PublishDir>bin\$(Configuration)\$(RuntimeIdentifier)\publish</PublishDir>
+    <IntermediateOutputPath>obj\$(Configuration)\$(RuntimeIdentifier)</IntermediateOutputPath>
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    
+    <!-- AOT Configuration - Optimized -->
+    <PublishAot>true</PublishAot>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <StripSymbols>true</StripSymbols>
+    
+    <!-- Native Optimization -->
+    <OptimizationPreference>Speed</OptimizationPreference>
     <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
     
-    <!-- Self-contained -->
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
-    <PublishTrimmed>true</PublishTrimmed>
+    <!-- Runtime Configuration -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <EventSourceSupport>false</EventSourceSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    
+    <!-- Trimming - Aggressive -->
+    <TrimMode>link</TrimMode>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
   </PropertyGroup>
 
 </Project>
