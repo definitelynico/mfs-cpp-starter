@@ -2,6 +2,8 @@
 
 A simple CLI tool that sets up a modern C++ project with CMake, similar to how `cargo new` works for Rust projects.
 
+#### WARNING! This is a work in progress and may contain all kinds of weird bugs. Use at your own risk!
+
 ## Why
 
 I get confused when I open an IDE, simple as. I just want to be able to create a C++ project quickly and get going, but I'm also terrible at remembering all the commands, arguments and flags to create things like .clang-format, compile-commands.json and others in order to have a pleasant experience in [your favorite terminal text editor].
