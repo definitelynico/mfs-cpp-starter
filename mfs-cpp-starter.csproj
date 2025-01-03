@@ -23,7 +23,7 @@
     <OutputPath>bin\$(Configuration)\$(RuntimeIdentifier)</OutputPath>
     <PublishDir>bin\$(Configuration)\$(RuntimeIdentifier)\publish</PublishDir>
     <IntermediateOutputPath>obj\$(Configuration)\$(RuntimeIdentifier)</IntermediateOutputPath>
-    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <!-- <UseArtifactsOutput>true</UseArtifactsOutput> -->
     
     <!-- AOT Configuration - Optimized -->
     <PublishAot>true</PublishAot>
