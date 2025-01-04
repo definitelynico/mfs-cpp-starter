@@ -16,24 +16,74 @@ public class FileGenerator
         _preferredGenerator = DetectPreferredGenerator();
     }
 
+    private static bool IsDependencyAvailable(string command)
+    {
+        try
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = command,
+                Arguments = "--version",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = Process.Start(startInfo);
+            process?.WaitForExit();
+            return process?.ExitCode == 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static void CheckDependencies()
+    {
+        var missing = new List<string>();
+
+        if (!IsDependencyAvailable("cmake")) missing.Add("CMake");
+        if (!IsDependencyAvailable("git")) missing.Add("Git");
+
+        if (missing.Any())
+        {
+            throw new ApplicationException(
+                $"Missing required dependencies: {string.Join(", ", missing)}\n" +
+                "Please ensure they are installed and available in your PATH.");
+        }
+    }
+
     private string GetCMakeVersion()
     {
-        var startInfo = new ProcessStartInfo
+        try
         {
-            FileName = "cmake",
-            Arguments = "--version",
-            RedirectStandardOutput = true,
-            UseShellExecute = false
-        };
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "cmake",
+                Arguments = "--version",
+                RedirectStandardOutput = true,
+                UseShellExecute = false
+            };
 
-        using var process = Process.Start(startInfo);
-        string output = process?.StandardOutput.ReadLine() ?? "";
-        process?.WaitForExit();
+            using var process = Process.Start(startInfo);
+            string output = process?.StandardOutput.ReadLine() ?? "";
+            process?.WaitForExit();
 
-        // Extract version from "cmake version X.Y.Z" and trim to X.Y
-        var version = output.Split(' ').Length >= 3 ? output.Split(' ')[2] : "3.20.0";
-        var match = Regex.Match(version, @"(\d+\.\d+)");
-        return match.Success ? match.Groups[1].Value : "3.20";
+            if (process?.ExitCode != 0)
+            {
+                throw new ApplicationException("Failed to get CMake version.");
+            }
+
+            // Extract version from "cmake version X.Y.Z" and trim to X.Y
+            var version = output.Split(' ').Length >= 3 ? output.Split(' ')[2] : "3.20.0";
+            var match = Regex.Match(version, @"(\d+\.\d+)");
+            return match.Success ? match.Groups[1].Value : "3.20";
+        }
+        catch (Exception ex) when (ex is not ApplicationException)
+        {
+            throw new ApplicationException("Failed to execute CMake. Please ensure it's properly installed.");
+        }
     }
 
     private string DetectPreferredGenerator()
@@ -113,7 +163,7 @@ target_link_directories({_projectName} PRIVATE lib)";
         {{
             ""name"": ""debug"",
             {generator}
-            ""binaryDir"": ""${{sourceDir}}/build/debug"",
+            ""binaryDir"": ""${{sourceDir}}/build"",
             ""cacheVariables"": {{
                 ""CMAKE_BUILD_TYPE"": ""Debug"",
                 ""CMAKE_EXPORT_COMPILE_COMMANDS"": true
@@ -124,8 +174,7 @@ target_link_directories({_projectName} PRIVATE lib)";
             {generator}
             ""binaryDir"": ""${{sourceDir}}/build/release"",
             ""cacheVariables"": {{
-                ""CMAKE_BUILD_TYPE"": ""Release"",
-                ""CMAKE_EXPORT_COMPILE_COMMANDS"": true
+                ""CMAKE_BUILD_TYPE"": ""Release""
             }}
         }}
     ]

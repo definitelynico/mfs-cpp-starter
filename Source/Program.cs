@@ -37,6 +37,9 @@ internal class Program
 
         try
         {
+            // Check dependencies before doing anything
+            FileGenerator.CheckDependencies();
+
             bool isInit = command == "init";
             if (Directory.Exists(projectPath))
             {
@@ -76,13 +79,39 @@ internal class Program
             Console.WriteLine("cmake --preset debug");
             Console.WriteLine("cmake --build build/debug");
         }
+        catch (ApplicationException ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            try
+            {
+                if (Directory.Exists(projectPath) &&
+                    !projectPath.Equals(Directory.GetCurrentDirectory(), StringComparison.OrdinalIgnoreCase))
+                {
+                    Directory.Delete(projectPath, true);
+                }
+            }
+            catch (IOException)
+            {
+                Console.WriteLine($"Warning: Could not clean up directory '{projectPath}'");
+            }
+            Environment.Exit(1);
+        }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error creating project: {ex.Message}");
-            if (Directory.Exists(projectPath))
+            Console.WriteLine($"Unexpected error: {ex.Message}");
+            try
             {
-                Directory.Delete(projectPath, true);
+                if (Directory.Exists(projectPath) &&
+                    !projectPath.Equals(Directory.GetCurrentDirectory(), StringComparison.OrdinalIgnoreCase))
+                {
+                    Directory.Delete(projectPath, true);
+                }
             }
+            catch (IOException)
+            {
+                Console.WriteLine($"Warning: Could not clean up directory '{projectPath}'");
+            }
+            Environment.Exit(1);
         }
     }
 
