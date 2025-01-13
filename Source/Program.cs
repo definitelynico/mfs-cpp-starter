@@ -74,10 +74,17 @@ internal class Program
             var generator = new FileGenerator(projectPath, projectName);
             generator.GenerateProject();
             Console.WriteLine($"Successfully created C++ project '{projectName}'");
-            Console.WriteLine("\nTo build your project:");
+            Console.WriteLine("\nTo build and run your project:");
             Console.WriteLine($"cd {projectName}");
-            Console.WriteLine("cmake --preset debug");
-            Console.WriteLine("cmake --build build/debug");
+
+            if (OperatingSystem.IsWindows())
+            {
+                Console.WriteLine("./run.ps1");
+            }
+            else
+            {
+                Console.WriteLine("./run.sh");
+            }
         }
         catch (ApplicationException ex)
         {

@@ -16,6 +16,8 @@ I get confused when I open an IDE, simple as. I just want to be able to create a
 - Includes debug and release build presets
 - Sets up clangd support via compile_commands.json
 - Configures .clang-format for consistent code style
+- Includes a simple inheritance example with virtual functions
+- Provides platform-specific run scripts (run.ps1/run.sh)
 - Initializes git repository with sensible .gitignore
 
 ## Installation
@@ -66,35 +68,66 @@ my-project/
 ├── src/
 │   └── main.cpp
 ├── include/
+│   └── animal.hpp      # Example header showing inheritance
 ├── lib/
 ├── build/
 ├── CMakeLists.txt
 ├── CMakePresets.json
 ├── .clang-format
-└── .gitignore
+├── .clangd
+├── .gitignore
+└── run.ps1/run.sh      # Platform-specific run script
 ```
 
-## Building Generated Projects
+## Building and Running Generated Projects
 
-After creating a project:
+After creating a project, you can build and run it using the provided script:
+
+```bash
+# On Windows
+./run.ps1
+
+# On Linux/macOS
+./run.sh
+```
+
+These scripts will:
+1. Configure CMake if not already done
+2. Build the project using the debug preset
+3. Run the executable
+
+Alternatively, you can manually build using:
 
 ```bash
 # Debug build (outputs compile_commands.json)
 cmake --preset debug
-cmake --build build
+cmake --build --preset debug
 
 # Release build
 cmake --preset release
-cmake --build build/release
+cmake --build --preset release
 ```
 
-The debug build places files directly in the `build/` directory and generates `compile_commands.json` 
-for LSP support. Release builds go to `build/release/` for separation.
+### Example Code
 
-### LSP Support
+The generated project includes a simple example demonstrating:
+- Pure virtual functions
+- Inheritance
+- Modern C++ features (smart pointers, range-based for)
+- Header organization
 
-The debug configuration automatically generates `compile_commands.json` in the `build/` directory, 
-where LSP servers like clangd will find it by default. No additional configuration needed.
+The example implements a basic animal hierarchy with different speak behaviors:
+```cpp
+class Animal {
+public:
+    virtual void speak() const = 0;
+};
+
+class Dog : public Animal {
+    void speak() const override { std::cout << "Woof!" << std::endl; }
+};
+// ... more animals
+```
 
 ## Requirements
 
