@@ -11,12 +11,11 @@ I get confused when I open an IDE, simple as. I just want to be able to create a
 ## Features
 
 - Creates a basic C++ project structure with src/, include/, and lib/ directories
-- Generates CMake configuration with modern defaults
+- Generates CMake configuration with modern C++23 defaults
 - Automatically detects and uses CMake version and preferred generator (Ninja if available)
 - Includes debug and release build presets
 - Sets up clangd support via compile_commands.json
 - Configures .clang-format for consistent code style
-- Includes a simple inheritance example with virtual functions
 - Provides platform-specific run scripts (run.ps1/run.sh)
 - Initializes git repository with sensible .gitignore
 
@@ -68,7 +67,6 @@ my-project/
 ├── src/
 │   └── main.cpp
 ├── include/
-│   └── animal.hpp      # Example header showing inheritance
 ├── lib/
 ├── build/
 ├── CMakeLists.txt
@@ -106,27 +104,6 @@ cmake --build --preset debug
 # Release build
 cmake --preset release
 cmake --build --preset release
-```
-
-### Example Code
-
-The generated project includes a simple example demonstrating:
-- Pure virtual functions
-- Inheritance
-- Modern C++ features (smart pointers, range-based for)
-- Header organization
-
-The example implements a basic animal hierarchy with different speak behaviors:
-```cpp
-class Animal {
-public:
-    virtual void speak() const = 0;
-};
-
-class Dog : public Animal {
-    void speak() const override { std::cout << "Woof!" << std::endl; }
-};
-// ... more animals
 ```
 
 ## Requirements

@@ -112,13 +112,13 @@ public class FileGenerator
     {
         CreateDirectories();
         GenerateMainCpp();
-        GenerateExampleHeaders();
         GenerateCMakeLists();
         GenerateCMakePresets();
         GenerateClangFormat();
         GenerateClangd();
         GenerateGitIgnore();
         GenerateRunScripts();
+        GenerateProjectReadme();
         InitializeGit();
     }
 
@@ -132,71 +132,14 @@ public class FileGenerator
 
     private void GenerateMainCpp()
     {
-        string content = @"#include ""animal.hpp""
-#include <memory>
-#include <vector>
+        string content = @"#include <iostream>
 
 int main()
 {
-    std::vector<std::unique_ptr<Animal>> animals;
-    
-    animals.push_back(std::make_unique<Dog>());
-    animals.push_back(std::make_unique<Cat>());
-    animals.push_back(std::make_unique<Rat>());
-
-    for (const auto& animal : animals)
-    {
-        animal->speak();
-    }
-
+    std::cout << ""Hello, World!"" << std::endl;
     return 0;
 }";
         File.WriteAllText(Path.Combine(_projectPath, "src", "main.cpp"), content);
-    }
-
-    private void GenerateExampleHeaders()
-    {
-        string animalContent = @"#ifndef ANIMAL_HPP
-#define ANIMAL_HPP
-
-#include <iostream>
-
-class Animal
-{
-public:
-    virtual ~Animal() = default;
-    virtual void speak() const = 0;
-};
-
-class Dog : public Animal
-{
-public:
-    void speak() const override
-    {
-        std::cout << ""Woof!"" << std::endl;
-    }
-};
-
-class Cat : public Animal
-{
-public:
-    void speak() const override
-    {
-        std::cout << ""Meow!"" << std::endl;
-    }
-};
-
-class Rat : public Animal
-{
-public:
-    void speak() const override
-    {
-        std::cout << ""Squeak!"" << std::endl;
-    }
-};
-
-#endif // ANIMAL_HPP";
-        File.WriteAllText(Path.Combine(_projectPath, "include", "animal.hpp"), animalContent);
     }
 
     private void GenerateCMakeLists()
@@ -205,44 +148,43 @@ public:
 project({_projectName} LANGUAGES CXX)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Define source and header files
-set(SOURCE_FILES
-    src/main.cpp
+# Create executable
+add_executable(${{PROJECT_NAME}})
+
+# Define sources
+target_sources(${{PROJECT_NAME}}
+    PRIVATE
+        src/main.cpp
 )
 
-set(HEADER_FILES
-    include/animal.hpp
+# Set include directories directly on target
+target_include_directories(${{PROJECT_NAME}}
+    PRIVATE 
+        ""${{CMAKE_SOURCE_DIR}}/include""
+        # Add additional include directories here, for example:
+        # ""${{CMAKE_SOURCE_DIR}}/include/raylib""
 )
 
-# Define library paths list
-set(LIB_PATHS
-    # Add your library paths here, for example:
-    # ""${{CMAKE_SOURCE_DIR}}/lib/yourlib.lib""
+# Link dependencies
+target_link_libraries(${{PROJECT_NAME}}
+    PRIVATE
+        # Add your library dependencies here, for example:
+        # ""${{CMAKE_SOURCE_DIR}}/lib/raylib.lib""
 )
 
-# Platform-specific libraries
+# Platform-specific dependencies
 if(WIN32)
     # Add your Windows-specific libraries here, for example:
-    # list(APPEND LIB_PATHS winmm)
+    # target_link_libraries(${{PROJECT_NAME}} PRIVATE winmm)
 elseif(APPLE)
     # Add your macOS-specific libraries here
 elseif(UNIX AND NOT APPLE)
     # Add your Linux-specific libraries here
-endif()
-
-# Create executable
-add_executable(${{PROJECT_NAME}} ${{SOURCE_FILES}} ${{HEADER_FILES}})
-
-# Set include directories directly on target
-target_include_directories(${{PROJECT_NAME}} PRIVATE 
-    ""${{CMAKE_SOURCE_DIR}}/include""
-)
-
-# Link libraries
-target_link_directories(${{PROJECT_NAME}} PRIVATE ${{LIB_PATHS}})";
+endif()";
 
         File.WriteAllText(Path.Combine(_projectPath, "CMakeLists.txt"), content);
     }
@@ -295,7 +237,7 @@ target_link_directories(${{PROJECT_NAME}} PRIVATE ${{LIB_PATHS}})";
     {
         string content = @"BasedOnStyle: LLVM
 IndentWidth: 4
-ColumnLimit: 80
+ColumnLimit: 120
 BreakBeforeBraces: Allman";
         File.WriteAllText(Path.Combine(_projectPath, ".clang-format"), content);
     }
@@ -387,5 +329,94 @@ cmake --build --preset debug
 
         using var process = Process.Start(startInfo);
         process?.WaitForExit();
+    }
+
+    private void GenerateProjectReadme()
+    {
+        string content = $@"# {_projectName}
+
+A modern C++23 project using CMake.
+
+## Quick Start
+
+Run the appropriate script for your platform:
+
+```bash
+# Windows
+./run.ps1
+
+# Linux/macOS
+./run.sh
+```
+
+## Manual Build Commands
+
+```bash
+# Debug build (with compile_commands.json)
+cmake --preset debug
+cmake --build --preset debug
+
+# Release build
+cmake --preset release
+cmake --build --preset release
+```
+
+## Project Structure
+
+```
+{_projectName}/
+├── src/              # Source files (.cpp)
+├── include/          # Header files (.hpp)
+├── lib/             # External libraries
+└── build/           # Build outputs
+```
+
+## Development Guide
+
+### Adding Source Files
+
+1. Create your .cpp files in `src/`
+2. Create your .hpp files in `include/`
+3. Add new source files to CMakeLists.txt:
+   ```cmake
+   target_sources(${{PROJECT_NAME}}
+       PRIVATE
+           src/your_new_file.cpp
+   )
+   ```
+
+### Adding Dependencies
+
+1. Place external libraries in `lib/`
+2. Add their headers in `include/`
+3. Update CMakeLists.txt:
+   ```cmake
+   # Add include directories
+   target_include_directories(${{PROJECT_NAME}}
+       PRIVATE 
+           ""${{CMAKE_SOURCE_DIR}}/include/your_lib""
+   )
+
+   # Link libraries
+   target_link_libraries(${{PROJECT_NAME}}
+       PRIVATE
+           ""${{CMAKE_SOURCE_DIR}}/lib/your_lib.lib""
+   )
+   ```
+
+### IDE Support
+
+This project includes:
+- `.clangd` configuration for LSP support
+- `.clang-format` for consistent code styling
+- `compile_commands.json` (generated in debug builds)
+
+### Build Outputs
+
+- Debug build: `build/debug/`
+- Release build: `build/release/`
+- Compilation database: `build/debug/compile_commands.json`";
+
+        File.WriteAllText(Path.Combine(_projectPath, "README.md"), content);
     }
 }
